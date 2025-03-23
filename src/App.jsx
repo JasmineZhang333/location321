@@ -11,14 +11,29 @@ function App() {
     cityStats: {}
   })
 
+  // 按城市对同学数据进行分组
+  const classmatesByCity = classmatesData.reduce((acc, classmate) => {
+    const cityKey = classmate.city;
+    if (!acc[cityKey]) {
+      const firstClassmate = classmatesData.find(c => c.city === cityKey);
+      acc[cityKey] = {
+        country: classmate.country,
+        classmates: [],
+        location: firstClassmate.location
+      };
+    }
+    acc[cityKey].classmates.push(classmate.name);
+    return acc;
+  }, {});
+
   useEffect(() => {
     const stats = getStatistics()
     setStatistics(stats)
   }, [])
 
   const starIcon = new Icon({
-    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+    iconUrl: '/marker-icon-2x-gold.png',
+    shadowUrl: '/marker-shadow.png',
     iconSize: [25, 41],
     iconAnchor: [12, 41],
     popupAnchor: [1, -34],
@@ -37,16 +52,16 @@ function App() {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
-          {classmatesData.map(classmate => (
+          {Object.entries(classmatesByCity).map(([city, data]) => (
             <Marker
-              key={classmate.id}
-              position={[classmate.location.lat, classmate.location.lng]}
+              key={city}
+              position={[data.location.lat, data.location.lng]}
               icon={starIcon}
             >
               <Popup>
                 <div>
-                  <h3>{classmate.name}</h3>
-                  <p>{classmate.city}, {classmate.country}</p>
+                  <h3>{city}, {data.country}</h3>
+                  <p>{data.classmates.join('、')}</p>
                 </div>
               </Popup>
             </Marker>
